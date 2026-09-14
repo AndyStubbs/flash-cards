@@ -21,7 +21,7 @@ import {
 	openManageModal,
 	resetCardForm,
 	renderManageModal,
-	startEditCard,
+	setCardFormMode,
 } from "./manage.js";
 import { render } from "./render.js";
 import {
@@ -91,6 +91,9 @@ elements.manageSetList.addEventListener("click", (event) => {
 
 	const setId = button.dataset.setId;
 	app.manageSelectedSetId = setId;
+	app.manageSelectedCardId = null;
+	app.cardFormMode = "view";
+	app.editingCardId = null;
 
 	if (setId !== app.currentSetId) {
 		activateSet(setId);
@@ -118,36 +121,34 @@ elements.deleteSetButton.addEventListener("click", () => {
 	deleteSet(app.manageSelectedSetId);
 });
 
-elements.manageCardList.addEventListener("click", (event) => {
-	const set = app.library.sets[app.manageSelectedSetId];
+elements.manageCardSelect.addEventListener("change", () => {
+	const value = elements.manageCardSelect.value;
+	app.manageSelectedCardId = value ? Number(value) : null;
+	setCardFormMode("view");
+});
 
-	if (!set) {
+elements.editCardButton.addEventListener("click", () => {
+	setCardFormMode("edit");
+});
+
+elements.deleteCardButton.addEventListener("click", () => {
+	if (app.manageSelectedCardId == null) {
 		return;
 	}
 
-	const editButton = event.target.closest("[data-edit-card]");
-	const deleteButton = event.target.closest("[data-delete-card]");
+	deleteCard(app.manageSelectedSetId, app.manageSelectedCardId);
+});
 
-	if (editButton) {
-		const card = set.cards.find((item) => String(item.id) === editButton.dataset.editCard);
-
-		if (card) {
-			startEditCard(card);
-		}
-
-		return;
-	}
-
-	if (deleteButton) {
-		const cardId = Number(deleteButton.dataset.deleteCard);
-		deleteCard(app.manageSelectedSetId, cardId);
-	}
+elements.newCardButton.addEventListener("click", () => {
+	setCardFormMode("add");
 });
 
 elements.saveCardButton.addEventListener("click", () => {
 	const draft = {
 		category: elements.cardCategoryInput.value,
-		question: elements.cardQuestionInput.value,
+		question: app.editingCardId
+			? elements.cardQuestionInput.value
+			: elements.newCardQuestionInput.value,
 		answer: elements.cardAnswerInput.value,
 	};
 	const saved = app.editingCardId

@@ -246,8 +246,7 @@ button {
 	font-size: 0.95rem;
 }
 
-.set-list,
-.card-manager-list {
+.set-list {
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
@@ -280,6 +279,14 @@ button {
 	gap: 8px;
 }
 
+.modal-actions[hidden] {
+	display: none;
+}
+
+.card-view-actions {
+	margin-bottom: 16px;
+}
+
 .set-actions .small-button,
 .modal-actions .small-button,
 .modal-actions .primary {
@@ -288,6 +295,10 @@ button {
 
 .field {
 	margin-bottom: 10px;
+}
+
+.field[hidden] {
+	display: none;
 }
 
 .field label {
@@ -300,6 +311,7 @@ button {
 }
 
 .field input,
+.field select,
 .field textarea {
 	width: 100%;
 	padding: 9px 12px;
@@ -314,21 +326,14 @@ button {
 	resize: vertical;
 }
 
-.card-manager-item {
-	padding: 10px 12px;
-	border: 1px solid var(--border);
-	border-radius: 8px;
-	background: rgba(15, 23, 42, 0.45);
+.field input[readonly],
+.field textarea[readonly] {
+	opacity: 0.85;
+	cursor: default;
 }
 
-.card-manager-item .badge {
-	display: inline-block;
-	margin-bottom: 6px;
-}
-
-.card-manager-item p {
-	margin: 0 0 8px;
-	font-size: 0.92rem;
+.field textarea[readonly] {
+	resize: none;
 }
 
 .close-button {

@@ -38,6 +38,8 @@ export const app = {
 	currentSetId: "",
 	library: createEmptyLibrary(),
 	manageSelectedSetId: "",
+	manageSelectedCardId: null,
+	cardFormMode: "view",
 	editingCardId: null,
 	dragDepth: 0,
 	state: createDefaultState(),

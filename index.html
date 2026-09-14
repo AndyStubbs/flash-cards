@@ -263,24 +263,44 @@
 
 				<section class="modal-section">
 					<h3 id="manageCardsHeading">Cards</h3>
-					<div class="card-manager-list" id="manageCardList"></div>
+					<div class="field" id="cardSelectField">
+						<label for="manageCardSelect">Card</label>
+						<select id="manageCardSelect"></select>
+					</div>
+					<div class="field" id="newCardQuestionField" hidden>
+						<label for="newCardQuestionInput">Question</label>
+						<input
+							id="newCardQuestionInput"
+							type="text"
+							placeholder="Card question"
+						/>
+					</div>
+					<div class="modal-actions card-view-actions" id="cardViewActions">
+						<button class="small-button" id="editCardButton" type="button">Edit</button>
+						<button class="small-button" id="deleteCardButton" type="button">
+							Delete
+						</button>
+						<button class="small-button" id="newCardButton" type="button">
+							New card
+						</button>
+					</div>
 
-					<h3 id="cardFormTitle">Add card</h3>
+					<h3 id="cardFormTitle">Card</h3>
 					<div class="field">
 						<label for="cardCategoryInput">Category</label>
-						<input id="cardCategoryInput" type="text" />
+						<input id="cardCategoryInput" type="text" readonly />
 					</div>
-					<div class="field">
+					<div class="field" id="cardQuestionField">
 						<label for="cardQuestionInput">Question</label>
-						<textarea id="cardQuestionInput"></textarea>
+						<textarea id="cardQuestionInput" readonly></textarea>
 					</div>
 					<div class="field">
 						<label for="cardAnswerInput">Answer</label>
-						<textarea id="cardAnswerInput"></textarea>
+						<textarea id="cardAnswerInput" readonly></textarea>
 					</div>
-					<div class="modal-actions">
-						<button class="primary" id="saveCardButton" type="button">Add card</button>
-						<button class="small-button" id="cancelCardEditButton" type="button" hidden>
+					<div class="modal-actions" id="cardEditActions" hidden>
+						<button class="primary" id="saveCardButton" type="button">Save card</button>
+						<button class="small-button" id="cancelCardEditButton" type="button">
 							Cancel
 						</button>
 					</div>

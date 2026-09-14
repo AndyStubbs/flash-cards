@@ -23,23 +23,37 @@ export function closeManageModal() {
 
 export function resetCardForm() {
 	app.editingCardId = null;
-	elements.cardCategoryInput.value = "";
-	elements.cardQuestionInput.value = "";
-	elements.cardAnswerInput.value = "";
-	elements.saveCardButton.textContent = "Add card";
-	elements.cancelCardEditButton.hidden = true;
-	elements.cardFormTitle.textContent = "Add card";
+	setCardFormMode("view");
 }
 
-export function startEditCard(card) {
-	app.editingCardId = card.id;
-	elements.cardCategoryInput.value = card.category;
-	elements.cardQuestionInput.value = card.question;
-	elements.cardAnswerInput.value = card.answer;
-	elements.saveCardButton.textContent = "Save card";
-	elements.cancelCardEditButton.hidden = false;
-	elements.cardFormTitle.textContent = "Edit card";
-	elements.cardQuestionInput.focus();
+export function setCardFormMode(mode) {
+	app.cardFormMode = mode;
+
+	if (mode === "add") {
+		app.editingCardId = null;
+		clearCardFields();
+	} else if (mode === "edit") {
+		const card = getSelectedCard();
+
+		if (!card) {
+			app.cardFormMode = "view";
+			fillCardFieldsFromSelection();
+		} else {
+			app.editingCardId = card.id;
+			fillCardFieldsFromSelection();
+		}
+	} else {
+		app.editingCardId = null;
+		fillCardFieldsFromSelection();
+	}
+
+	applyCardFormChrome();
+
+	if (app.cardFormMode === "add") {
+		elements.newCardQuestionInput.focus();
+	} else if (app.cardFormMode === "edit") {
+		elements.cardQuestionInput.focus();
+	}
 }
 
 export function renderManageModal() {
@@ -89,52 +103,118 @@ export function renderManageModal() {
 	elements.renameSetButton.disabled = !selected;
 	elements.downloadSetButton.disabled = !selected;
 	elements.deleteSetButton.disabled = !selected;
-	elements.saveCardButton.disabled = !selected;
 	elements.manageCardsHeading.textContent = selected
 		? `Cards in ${selected.name} (${selected.cards.length})`
 		: "Cards";
-	elements.manageCardList.innerHTML = "";
 
-	if (!selected) {
+	populateCardSelect(selected);
+
+	if (app.cardFormMode === "edit" && !getSelectedCard()) {
+		app.cardFormMode = "view";
+		app.editingCardId = null;
+	}
+
+	if (app.cardFormMode === "view") {
+		fillCardFieldsFromSelection();
+	}
+
+	applyCardFormChrome();
+}
+
+function populateCardSelect(selected) {
+	elements.manageCardSelect.innerHTML = "";
+
+	if (!selected || !selected.cards.length) {
+		const option = document.createElement("option");
+		option.value = "";
+		option.textContent = "No cards";
+		elements.manageCardSelect.appendChild(option);
+		app.manageSelectedCardId = null;
 		return;
 	}
 
-	if (!selected.cards.length) {
-		const empty = document.createElement("p");
-		empty.className = "modal-lead";
-		empty.textContent = "No cards yet. Add one below.";
-		elements.manageCardList.appendChild(empty);
-		return;
+	const stillSelected = selected.cards.some(
+		(card) => card.id === app.manageSelectedCardId,
+	);
+
+	if (!stillSelected) {
+		app.manageSelectedCardId = selected.cards[0].id;
 	}
 
 	selected.cards.forEach((card) => {
-		const item = document.createElement("div");
-		item.className = "card-manager-item";
-
-		const badge = document.createElement("span");
-		badge.className = "badge";
-		badge.textContent = card.category;
-
-		const question = document.createElement("p");
-		question.textContent = card.question;
-
-		const actions = document.createElement("div");
-		actions.className = "modal-actions";
-
-		const editButton = document.createElement("button");
-		editButton.className = "small-button";
-		editButton.type = "button";
-		editButton.dataset.editCard = String(card.id);
-		editButton.textContent = "Edit";
-
-		const deleteButton = document.createElement("button");
-		deleteButton.className = "small-button";
-		deleteButton.type = "button";
-		deleteButton.dataset.deleteCard = String(card.id);
-		deleteButton.textContent = "Delete";
-
-		actions.append(editButton, deleteButton);
-		item.append(badge, question, actions);
-		elements.manageCardList.appendChild(item);
+		const option = document.createElement("option");
+		option.value = String(card.id);
+		option.textContent = cardOptionLabel(card);
+		elements.manageCardSelect.appendChild(option);
 	});
+
+	elements.manageCardSelect.value = String(app.manageSelectedCardId);
+}
+
+function cardOptionLabel(card) {
+	const question = String(card.question || "").replace(/\s+/g, " ").trim();
+	const truncated =
+		question.length > 72 ? `${question.slice(0, 69)}…` : question;
+	return `${card.category} — ${truncated}`;
+}
+
+function getSelectedCard() {
+	const selected = app.library.sets[app.manageSelectedSetId];
+
+	if (!selected) {
+		return null;
+	}
+
+	return (
+		selected.cards.find((card) => card.id === app.manageSelectedCardId) || null
+	);
+}
+
+function clearCardFields() {
+	elements.cardCategoryInput.value = "";
+	elements.cardQuestionInput.value = "";
+	elements.newCardQuestionInput.value = "";
+	elements.cardAnswerInput.value = "";
+}
+
+function fillCardFieldsFromSelection() {
+	const card = getSelectedCard();
+	elements.cardCategoryInput.value = card ? card.category : "";
+	elements.cardQuestionInput.value = card ? card.question : "";
+	elements.cardAnswerInput.value = card ? card.answer : "";
+}
+
+function applyCardFormChrome() {
+	const selected = app.library.sets[app.manageSelectedSetId];
+	const card = getSelectedCard();
+	const isView = app.cardFormMode === "view";
+	const isAdd = app.cardFormMode === "add";
+	const isEdit = app.cardFormMode === "edit";
+	const readOnly = isView;
+
+	elements.cardCategoryInput.readOnly = readOnly;
+	elements.cardQuestionInput.readOnly = readOnly;
+	elements.cardAnswerInput.readOnly = readOnly;
+
+	elements.manageCardSelect.disabled = !selected || !selected.cards.length || isAdd;
+	elements.cardSelectField.hidden = isAdd;
+	elements.newCardQuestionField.hidden = !isAdd;
+	elements.cardQuestionField.hidden = isAdd;
+
+	elements.cardViewActions.hidden = !isView;
+	elements.cardEditActions.hidden = isView;
+	elements.editCardButton.disabled = !card;
+	elements.deleteCardButton.disabled = !card;
+	elements.newCardButton.disabled = !selected;
+	elements.saveCardButton.disabled = !selected;
+
+	if (isAdd) {
+		elements.saveCardButton.textContent = "Add card";
+		elements.cardFormTitle.textContent = "New card";
+	} else if (isEdit) {
+		elements.saveCardButton.textContent = "Save card";
+		elements.cardFormTitle.textContent = "Edit card";
+	} else {
+		elements.cardFormTitle.textContent = "Card";
+	}
 }

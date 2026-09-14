@@ -11,7 +11,7 @@ import {
 import { elements } from "./elements.js";
 import { showToast } from "./toast.js";
 import { render, renderCategories, syncNav } from "./render.js";
-import { openManageModal, renderManageModal, resetCardForm } from "./manage.js";
+import { openManageModal, renderManageModal } from "./manage.js";
 
 export function getSetList() {
 	return Object.values(app.library.sets).sort((a, b) =>
@@ -379,10 +379,14 @@ export function addCard(setId, draft) {
 		return false;
 	}
 
+	const id = nextCardId(set);
+	app.manageSelectedCardId = id;
+	app.editingCardId = null;
+	app.cardFormMode = "view";
 	persistSetCards(setId, [
 		...set.cards,
 		{
-			id: nextCardId(set),
+			id,
 			category,
 			question,
 			answer,
@@ -408,6 +412,7 @@ export function updateCard(setId, cardId, draft) {
 		return false;
 	}
 
+	app.cardFormMode = "view";
 	persistSetCards(
 		setId,
 		set.cards.map((card) =>
@@ -425,14 +430,16 @@ export function deleteCard(setId, cardId) {
 		return;
 	}
 
+	if (app.manageSelectedCardId === cardId) {
+		app.manageSelectedCardId = null;
+	}
+
+	app.editingCardId = null;
+	app.cardFormMode = "view";
 	persistSetCards(
 		setId,
 		set.cards.filter((card) => card.id !== cardId),
 	);
-
-	if (app.editingCardId === cardId) {
-		resetCardForm();
-	}
 
 	showToast("Card deleted.");
 }
