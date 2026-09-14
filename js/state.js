@@ -1,6 +1,6 @@
 import { elements } from "./elements.js";
 
-export const storageKeyPrefix = "micron-interview-flashcards-v2";
+export const storageKeyPrefix = "interview-flashcards-v2";
 export const lastSetStorageKey = `${storageKeyPrefix}:last-set`;
 export const libraryStorageKey = `${storageKeyPrefix}:library`;
 export const legacyStorageKey = storageKeyPrefix;
@@ -82,7 +82,7 @@ export function saveState() {
 }
 
 export function migrateLegacyProgress(setId) {
-	if (setId !== "micron") {
+	if (setId !== "flash-initial") {
 		return;
 	}
 
