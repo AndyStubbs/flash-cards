@@ -1,0 +1,8 @@
+{
+	"name": "flash-server",
+	"private": true,
+	"description": "Lightweight server for interview flash cards",
+	"scripts": {
+		"start": "node server.js"
+	}
+}
